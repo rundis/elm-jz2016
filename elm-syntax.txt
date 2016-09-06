@@ -1,0 +1,199 @@
+- Values And Functions
+- Working with Collections (List)
+- Pipelines
+- Records
+- Type Alias
+- Types
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+--  1 Functions and Values -----
+
+a = 1 -- Can reassign in repl but not in an Elm program !
+
+add a b =  -- add: number -> number -> number
+  a + b
+
+add 2 2
+
+silly a b =   -- This makes no sense, everything is an expression in Elm, no statements. (Hint no Side Effects, only pure functions !)
+  add a b
+  a * b
+
+addCopy = add  -- Functions are values
+addCopy 2 2
+
+fancyMath adder a b c =  -- So you can pass them as parameters to functions of course
+  (adder a b) * c
+
+
+-- 2: Currying / Function application -------
+
+inc = add 1 -- function !
+
+inc 4
+
+add 2 2 == (add 2) 2
+
+
+-- 3: Type annotations (editor) -- Tiny detour ---
+
+-- 4: Collections (List) ------
+
+import List -- default imported but for clarity
+
+
+-- 4.1 Map -------
+
+List.map (\a -> a + 1) [1,2,3]
+
+List.map inc [1,2,3]
+
+List.map ((+) 1) [1,2,3]
+
+List.map2 (\a b -> a + b) [1,2,3] [1,2,3]
+
+List.map2 add [1,2,3] [1,2,3]
+
+List.map2 (+) [1,2,3] [1,2,3]
+
+List.map2 (,) [1,2,3] [1,2,3] -- tuple operator !
+
+List.map (\(a,b) -> a + b) [(1,1), (2,2), (3,3)] -- pattern matching
+
+
+
+-- 4.2 Filter ------
+List.filter (\a -> a < 3) [1,2,3]
+
+-- 4.3 Reduce (folds)
+List.foldl (\a b -> a + b) 0 [1,2,3]
+List.foldl add 0 [1,2,3]
+List.foldl (+) 0 [1,2,3]
+List.foldr (+) 0 [1,2,3]
+List.sum [1,2,3] --  !!
+
+-- 4.4 Pipeline fun
+List.map inc [1,2,3]
+  |> List.map inc
+  |> List.foldl (+) 0
+
+
+-- 5: Records and Type Alias
+magnus = {age = 41, name = "Magnus"}
+
+magnus.age
+.age magnus
+
+List.map .age [magnus, magnus, magnus]
+
+
+type alias Person =
+  { age : Int
+  , name : String
+  }
+
+Person 41 "Magnus"
+Person 41  -- just a function !
+
+
+-- 6: Union Types
+type Move number
+  = MoveNorth number
+  | MoveSouth number
+  | Stop
+
+
+move mv =
+    case mv of
+        MoveNorth val ->
+            "Move " ++ toString val ++ " North"
+        MoveSouth val ->
+            "Move " ++ toString val ++ " South"
+        Stop ->
+            "Stop"
+
+move (MoveNorth 1)
+move <| MoveNorth 1
+
+
+
+List.head [1,2,3]  -- Just 1
+List.head [] -- Nothing
+
+type Maybe a
+  = Just a
+  | Nothing
+
+
+List.head [1,2,3]  ---ERROR
+  |> inc
+
+import Maybe
+List.head [1,2,3]  ---ERROR
+  |> Maybe.map inc
+--|> Maybe.withDefault 0
+
+type Perhaps a
+  = Deffo a
+  | Nope
+
+
+myHead xs =
+  List.head xs
+    |> (\maybeVal ->
+          case maybeVal of
+            Just val -> Deffo val
+            Nothing -> Nope)
+
+myHead [1,2,3]
+myHead []
+
+myHead2 xs =
+  case xs of
+    head :: tail -> Deffo head
+    _ -> Nope
+
+
+perMaps fn perhapsVal =
+    case perhapsVal of
+        Deffo val -> Deffo (fn val)
+        Nope -> Nope
+
+
+myHead []
+  |> perMaps inc
+
+
+-- 7: Pattern matching
+-- See above !
